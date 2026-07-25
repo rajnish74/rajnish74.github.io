@@ -262,6 +262,44 @@ nav.scrolled{box-shadow:0 4px 30px rgba(0,0,0,.4)}
 .rmap-chip{font-family:'JetBrains Mono',monospace;font-size:.68rem;padding:.3rem .65rem;border-radius:5px;border:1px solid var(--border2);color:var(--text2)}
 .rmap-chip.doing{border-color:rgba(255,180,84,.3);color:var(--warning);background:rgba(255,180,84,.06)}
 .rmap-chip.planned{border-color:var(--border2);color:var(--muted)}
+
+/* state machine diagram */
+.sm-wrap{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:1rem;overflow-x:auto}
+#smSvg{width:100%;min-width:680px;height:auto;display:block}
+.sm-node{cursor:pointer}
+.sm-node rect{fill:var(--card);stroke:var(--border2);stroke-width:1.5;transition:stroke .2s,fill .2s}
+.sm-node text{fill:var(--text2);font-family:'JetBrains Mono',monospace;font-size:10px;text-anchor:middle;pointer-events:none;transition:fill .2s}
+.sm-node.terminal rect{stroke-dasharray:3,3}
+.sm-node:hover rect{stroke:rgba(0,217,192,.5)}
+.sm-node.active rect{fill:var(--accent-dim);stroke:var(--accent)}
+.sm-node.active text{fill:var(--accent)}
+.sm-node.connected rect{stroke:var(--purple)}
+.sm-edge{fill:none;stroke:var(--border2);stroke-width:1.5;opacity:.55;transition:stroke .2s,opacity .2s,stroke-width .2s}
+.sm-edge.happy{stroke:var(--accent)}
+.sm-edge.refund{stroke:var(--purple)}
+.sm-edge.retry{stroke:var(--warning)}
+.sm-edge.fail{stroke:var(--error)}
+.sm-edge.cancel{stroke:var(--muted)}
+.sm-edge.dim{opacity:.12}
+.sm-edge.spotlight{opacity:1;stroke-width:2.75}
+.sm-info{margin-top:.9rem;padding:.85rem 1rem;background:var(--card);border:1px solid var(--border2);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--text2);min-height:2.2em}
+.sm-info .sm-empty{color:var(--muted);font-style:italic}
+.sm-info-title{color:var(--text);font-weight:600;margin-bottom:.5rem}
+.sm-tr-row{display:flex;align-items:center;gap:.5rem;padding:.2rem 0;flex-wrap:wrap}
+.sm-tr-dir{color:var(--muted);width:14px;flex-shrink:0}
+.sm-tr-event{color:var(--accent)}
+.sm-legend{display:flex;flex-wrap:wrap;gap:1rem;margin-top:.75rem;font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted)}
+.sm-legend span{display:inline-flex;align-items:center;gap:.4rem}
+.sm-legend i{width:14px;height:2.5px;border-radius:2px;display:inline-block}
+
+.sm-wrap{display:flex;gap:1rem;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:1rem;align-items:stretch}
+.sm-wrap svg{flex:1 1 580px;min-width:280px;background:var(--bg);border-radius:8px}
+.sm-info{flex:1 1 230px;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:1rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text2);line-height:1.8;max-height:360px;overflow-y:auto}
+.sm-info b{color:var(--accent)}
+.sm-info .sm-empty{color:var(--muted);font-style:italic}
+.sm-legend{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.7rem;font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--muted)}
+.sm-legend span{display:inline-flex;align-items:center;gap:.3rem}
+.sm-legend i{width:10px;height:2px;display:inline-block;border-radius:2px}
 #lightbox{position:fixed;inset:0;background:rgba(4,4,10,.92);backdrop-filter:blur(6px);z-index:9997;display:none;align-items:center;justify-content:center;padding:3rem;flex-direction:column;gap:1rem}
 #lightbox.open{display:flex}
 #lightbox img{max-width:min(90vw,1100px);max-height:75vh;border-radius:10px;border:1px solid var(--border2);box-shadow:0 30px 80px rgba(0,0,0,.6)}
@@ -571,6 +609,57 @@ footer{border-top:1px solid var(--border);padding:1.75rem 2.5rem;position:relati
                 <div class="arch-box">Gateway/Processor <span style="color:var(--muted)">(Adapter + Strategy pattern per method)</span></div>
                 <div class="arch-arrow">↓</div>
                 <div class="arch-box accent">PostgreSQL + Redis <span style="color:var(--muted)">(data + cache/rate-limit counters)</span></div>
+              </div>
+            </div>
+
+            <div class="cf-block">
+              <div class="cf-heading">payment state machine — all 14 real transitions</div>
+              <div class="cf-text">This is the exact transition table enforced in <code>PaymentStateMachine.java</code> — not a simplified version. Click any state to see what can happen to it.</div>
+              <div class="sm-wrap">
+                <svg id="smSvg" viewBox="0 0 1020 340" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <marker id="smArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                      <path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/>
+                    </marker>
+                  </defs>
+                  <g id="smEdges">
+                    <line class="sm-edge happy" data-from="CREATED" data-to="AUTHORIZING" data-event="AUTHORIZE_ATTEMPT" x1="159" y1="170" x2="205" y2="170" marker-end="url(#smArrow)"/>
+                    <line class="sm-edge happy" data-from="AUTHORIZING" data-to="AUTHORIZED" data-event="AUTHORIZE_SUCCESS" x1="323" y1="170" x2="369" y2="170" marker-end="url(#smArrow)"/>
+                    <line class="sm-edge fail" data-from="AUTHORIZING" data-to="FAILED" data-event="AUTHORIZE_FAILURE" x1="264" y1="152" x2="264" y2="78" marker-end="url(#smArrow)"/>
+                    <line class="sm-edge happy" data-from="AUTHORIZED" data-to="CAPTURING" data-event="CAPTURE_REQUEST" x1="487" y1="170" x2="533" y2="170" marker-end="url(#smArrow)"/>
+                    <line class="sm-edge happy" data-from="CAPTURING" data-to="CAPTURED" data-event="CAPTURE_SUCCESS" x1="651" y1="170" x2="697" y2="170" marker-end="url(#smArrow)"/>
+                    <path class="sm-edge retry" data-from="CAPTURING" data-to="AUTHORIZED" data-event="CAPTURE_FAILURE" d="M 592 188 C 592 240 428 240 428 188" marker-end="url(#smArrow)"/>
+                    <line class="sm-edge refund" data-from="CAPTURED" data-to="PARTIALLY_REFUNDED" data-event="REFUND_INIT" x1="756" y1="188" x2="756" y2="282" marker-end="url(#smArrow)"/>
+                    <line class="sm-edge refund" data-from="PARTIALLY_REFUNDED" data-to="REFUNDED" data-event="REFUND_SUCCESS" x1="815" y1="300" x2="861" y2="300" marker-end="url(#smArrow)"/>
+                    <path class="sm-edge refund" data-from="CAPTURED" data-to="REFUNDED" data-event="REFUND_SUCCESS" d="M 785 186 C 870 205 900 250 920 282" marker-end="url(#smArrow)"/>
+                    <line class="sm-edge happy" data-from="CAPTURED" data-to="SETTLED" data-event="SETTLE" x1="815" y1="170" x2="861" y2="170" marker-end="url(#smArrow)"/>
+                    <line class="sm-edge refund" data-from="SETTLED" data-to="PARTIALLY_REFUNDED" data-event="REFUND_INIT" x1="893" y1="186" x2="793" y2="284" marker-end="url(#smArrow)"/>
+                    <line class="sm-edge cancel" data-from="CREATED" data-to="CANCELLED" data-event="CANCEL" x1="115" y1="152" x2="165" y2="78" marker-end="url(#smArrow)"/>
+                    <line class="sm-edge cancel" data-from="AUTHORIZING" data-to="CANCELLED" data-event="CANCEL" x1="249" y1="152" x2="199" y2="78" marker-end="url(#smArrow)"/>
+                    <line class="sm-edge retry" data-from="AUTHORIZED" data-to="AUTH_EXPIRED" data-event="CAPTURE_TIMEOUT" x1="428" y1="152" x2="428" y2="78" marker-end="url(#smArrow)"/>
+                  </g>
+                  <g id="smNodes">
+                    <g class="sm-node" data-state="CREATED" transform="translate(100,170)"><rect x="-59" y="-18" width="118" height="36" rx="6"/><text y="4">CREATED</text></g>
+                    <g class="sm-node" data-state="AUTHORIZING" transform="translate(264,170)"><rect x="-59" y="-18" width="118" height="36" rx="6"/><text y="4">AUTHORIZING</text></g>
+                    <g class="sm-node" data-state="AUTHORIZED" transform="translate(428,170)"><rect x="-59" y="-18" width="118" height="36" rx="6"/><text y="4">AUTHORIZED</text></g>
+                    <g class="sm-node" data-state="CAPTURING" transform="translate(592,170)"><rect x="-59" y="-18" width="118" height="36" rx="6"/><text y="4">CAPTURING</text></g>
+                    <g class="sm-node" data-state="CAPTURED" transform="translate(756,170)"><rect x="-59" y="-18" width="118" height="36" rx="6"/><text y="4">CAPTURED</text></g>
+                    <g class="sm-node" data-state="SETTLED" transform="translate(920,170)"><rect x="-59" y="-18" width="118" height="36" rx="6"/><text y="4">SETTLED</text></g>
+                    <g class="sm-node terminal" data-state="CANCELLED" transform="translate(182,60)"><rect x="-59" y="-18" width="118" height="36" rx="6"/><text y="4">CANCELLED</text></g>
+                    <g class="sm-node terminal" data-state="FAILED" transform="translate(264,60)"><rect x="-59" y="-18" width="118" height="36" rx="6"/><text y="4">FAILED</text></g>
+                    <g class="sm-node terminal" data-state="AUTH_EXPIRED" transform="translate(428,60)"><rect x="-59" y="-18" width="118" height="36" rx="6"/><text y="4" style="font-size:9px">AUTH_EXPIRED</text></g>
+                    <g class="sm-node" data-state="PARTIALLY_REFUNDED" transform="translate(756,300)"><rect x="-59" y="-18" width="118" height="36" rx="6"/><text y="4" style="font-size:8.5px">PARTIALLY_REFUNDED</text></g>
+                    <g class="sm-node terminal" data-state="REFUNDED" transform="translate(920,300)"><rect x="-59" y="-18" width="118" height="36" rx="6"/><text y="4">REFUNDED</text></g>
+                  </g>
+                </svg>
+                <div class="sm-info" id="smInfo"><span class="sm-empty">Click any state above to inspect its incoming and outgoing transitions.</span></div>
+              </div>
+              <div class="sm-legend">
+                <span><i style="background:var(--accent)"></i>happy path</span>
+                <span><i style="background:var(--purple)"></i>refund</span>
+                <span><i style="background:var(--warning)"></i>timeout / retry</span>
+                <span><i style="background:var(--error)"></i>failure</span>
+                <span><i style="background:var(--muted)"></i>cancel</span>
               </div>
             </div>
 
@@ -1089,6 +1178,63 @@ if(contactForm){
     setTimeout(()=>formMsg.classList.remove('show'),4000);
   });
 }
+
+/* ── PAYMENT STATE MACHINE DIAGRAM ── */
+(function(){
+  const nodes=document.querySelectorAll('.sm-node');
+  const edges=document.querySelectorAll('.sm-edge');
+  const info=document.getElementById('smInfo');
+  if(!nodes.length) return;
+  let activeState=null;
+
+  function render(state){
+    nodes.forEach(n=>n.classList.remove('active','connected'));
+    edges.forEach(e=>e.classList.remove('spotlight','dim'));
+
+    if(!state){
+      info.innerHTML='<span class="sm-empty">Click any state above to inspect its incoming and outgoing transitions.</span>';
+      return;
+    }
+
+    const outgoing=[],incoming=[];
+    const connectedStates=new Set();
+    edges.forEach(e=>{
+      const from=e.dataset.from, to=e.dataset.to, event=e.dataset.event;
+      if(from===state){ e.classList.add('spotlight'); outgoing.push({event,to}); connectedStates.add(to); }
+      else if(to===state){ e.classList.add('spotlight'); incoming.push({event,from}); connectedStates.add(from); }
+      else { e.classList.add('dim'); }
+    });
+
+    nodes.forEach(n=>{
+      if(n.dataset.state===state) n.classList.add('active');
+      else if(connectedStates.has(n.dataset.state)) n.classList.add('connected');
+    });
+
+    let html=`<div class="sm-info-title">${state}</div>`;
+    if(outgoing.length){
+      outgoing.forEach(o=>{
+        html+=`<div class="sm-tr-row"><span class="sm-tr-dir">→</span><span class="sm-tr-event">${o.event}</span><span>leads to <strong style="color:var(--text)">${o.to}</strong></span></div>`;
+      });
+    }
+    if(incoming.length){
+      incoming.forEach(i=>{
+        html+=`<div class="sm-tr-row"><span class="sm-tr-dir">←</span><span>reached from <strong style="color:var(--text)">${i.from}</strong> via</span><span class="sm-tr-event">${i.event}</span></div>`;
+      });
+    }
+    if(!outgoing.length){
+      html+=`<div class="sm-tr-row"><span class="sm-empty">No outgoing transitions — this is a terminal state.</span></div>`;
+    }
+    info.innerHTML=html;
+  }
+
+  nodes.forEach(n=>{
+    n.addEventListener('click',()=>{
+      const state=n.dataset.state;
+      activeState = activeState===state ? null : state;
+      render(activeState);
+    });
+  });
+})();
 
 /* ── CASE STUDY TOGGLE ── */
 const caseToggle=document.getElementById('caseToggle');
