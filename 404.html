@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>404 — Rajnish Kumar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/style.css"/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2308080F'/%3E%3Ctext x='32' y='42' font-family='monospace' font-size='28' font-weight='700' fill='%2300D9C0' text-anchor='middle'%3ERK%3C/text%3E%3C/svg%3E"/>
+<style>
+  html{cursor:auto !important}
+  body{display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:2rem}
+  .err-code{font-family:'JetBrains Mono',monospace;font-size:clamp(4rem,14vw,7rem);font-weight:700;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+  .err-msg{font-family:'JetBrains Mono',monospace;color:var(--text2);font-size:.95rem;margin:1rem 0 2rem}
+  .err-msg .path{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div>
+  <div class="err-code">404</div>
+  <p class="err-msg">GET <span class="path" id="reqPath">this page</span> → <strong style="color:var(--error)">NOT_FOUND</strong><br/>the route you're looking for doesn't exist.</p>
+  <a href="/" class="btn btn-primary">Back to home →</a>
+</div>
+<script>
+  document.getElementById('reqPath').textContent = location.pathname;
+</script>
+</body>
+</html>

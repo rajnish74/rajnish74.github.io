@@ -1,5 +1,6 @@
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const alreadyVisited = (()=>{ try{ return sessionStorage.getItem('rk_visited')==='1'; }catch(e){ return false; } })();
 
 /* ── PRELOADER BOOT SEQUENCE ── */
 const bootMsgs=[
@@ -14,7 +15,7 @@ const bootBar=document.getElementById('bootBar');
 const preloader=document.getElementById('preloader');
 
 function runBoot(){
-  if(reduceMotion){ finishBoot(); return; }
+  if(reduceMotion || alreadyVisited){ finishBoot(); return; }
   let i=0;
   function next(){
     if(i>=bootMsgs.length){ setTimeout(finishBoot,300); return; }
@@ -30,17 +31,26 @@ function runBoot(){
   next();
 }
 function finishBoot(){
+  try{ sessionStorage.setItem('rk_visited','1'); }catch(e){}
   preloader.classList.add('hide');
   document.getElementById('heroInner').classList.add('hero-anim-in');
-  setTimeout(type, 900); // start typing title after hero settles
-  setTimeout(addLog, 1400);
+  const typeDelay = alreadyVisited ? 150 : 900;
+  const logDelay = alreadyVisited ? 300 : 1400;
+  setTimeout(type, typeDelay); // start typing title after hero settles
+  setTimeout(addLog, logDelay);
 }
-window.addEventListener('load',()=>setTimeout(runBoot,250));
-// fallback in case load event already fired / slow assets
-setTimeout(()=>{ if(!preloader.classList.contains('hide')) runBoot(); }, 2200);
+if(alreadyVisited){
+  preloader.style.transition='none';
+  finishBoot();
+}else{
+  window.addEventListener('load',()=>setTimeout(runBoot,250));
+  // fallback in case load event already fired / slow assets
+  setTimeout(()=>{ if(!preloader.classList.contains('hide')) runBoot(); }, 2200);
+}
 
 /* ── CUSTOM CURSOR ── */
-if(!reduceMotion){
+const isTouchDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+if(!reduceMotion && !isTouchDevice){
   const cur=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
   let mx=0,my=0,rx=0,ry=0;
   document.addEventListener('mousemove',e=>{
@@ -145,6 +155,11 @@ function closeMobile(){hb.classList.remove('open');mm.classList.remove('open')}
 /* ── SCROLL REVEAL ── */
 const obs=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('in')}),{threshold:0.08});
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+const headingObs=new IntersectionObserver(e=>e.forEach(x=>{
+  if(x.isIntersecting){ x.target.classList.add('underline-in'); headingObs.unobserve(x.target); }
+}),{threshold:0.6});
+document.querySelectorAll('.section-heading').forEach(el=>headingObs.observe(el));
 
 /* ── SKILL METER FILL ON SCROLL ── */
 const meterObs=new IntersectionObserver(entries=>{
